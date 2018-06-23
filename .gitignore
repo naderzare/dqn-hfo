@@ -32,3 +32,4 @@ log/
 build/
 scripts/
 state/
+CMakeLists\.txt\.user
