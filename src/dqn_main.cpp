@@ -411,7 +411,7 @@ int main(int argc, char** argv) {
     DQNS[i] = NULL;
   }
   srand(std::hash<std::string>()(save_path.native()));
-  int port = rand() % 40000 + 20000;
+  int port = 6000;//rand() % 40000 + 20000;
   std::thread server_thread(
       StartHFOServer, port, FLAGS_offense_agents + FLAGS_offense_dummies,
       FLAGS_offense_npcs,
