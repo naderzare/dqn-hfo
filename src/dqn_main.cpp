@@ -36,13 +36,13 @@ DEFINE_double(clip_grad, 10, "Clip gradients.");
 DEFINE_string(lr_policy, "fixed", "LR Policy.");
 DEFINE_int32(max_iter, 10000000, "Custom max iter.");
 // Epsilon-Greedy Args
-DEFINE_int32(explore, 10000, "Iterations for epsilon to reach given value.");
+DEFINE_int32(explore, 1000000, "Iterations for epsilon to reach given value.");
 DEFINE_double(epsilon, .1, "Value of epsilon after explore iterations.");
 DEFINE_double(evaluate_with_epsilon, 0, "Epsilon value to be used in evaluation mode");
 // Evaluation Args
 DEFINE_bool(evaluate, false, "Evaluation mode: only playing a game, no updates");
 DEFINE_int32(evaluate_freq, 10000, "Frequency (steps) between evaluations");
-DEFINE_int32(repeat_games, 100, "Number of games played in evaluation mode");
+DEFINE_int32(repeat_games, 1000, "Number of games played in evaluation mode");
 // Misc Args
 DEFINE_double(update_ratio, 0.1, "Ratio of new experiences to updates.");
 // Sharing
@@ -349,10 +349,11 @@ void KeepPlayingGames(int tid, std::string save_prefix, int port) {
   }
   int last_eval_iter = dqn->max_iter();
   double best_score = std::numeric_limits<double>::min();
+  double avg_score = Evaluate(env, *dqn, tid);
   for (int episode = 0; dqn->max_iter() < FLAGS_max_iter; ++episode) {
     double epsilon = CalculateEpsilon(dqn->max_iter());
     auto result = PlayOneEpisode(env, *dqn, epsilon, true, tid);
-    LOG(INFO) << "[Agent" << tid <<"] Episode " << episode
+    LOG(INFO) << "[AgentAfterOneEpisod" << tid <<"] Episode " << episode
               << " reward = " << std::get<0>(result);
     int steps = std::get<1>(result);
     int n_updates = int(steps * FLAGS_update_ratio);
@@ -403,10 +404,12 @@ int main(int argc, char** argv) {
     exit(1);
   }
   path save_path(FLAGS_save);
-  google::SetLogDestination(google::GLOG_INFO, (save_path.native() + "_INFO_").c_str());
+
   google::SetLogDestination(google::GLOG_WARNING, (save_path.native() + "_WARNING_").c_str());
   google::SetLogDestination(google::GLOG_ERROR, (save_path.native() + "_ERROR_").c_str());
   google::SetLogDestination(google::GLOG_FATAL, (save_path.native() + "_FATAL_").c_str());
+  google::SetLogDestination(google::GLOG_INFO, (save_path.native() + "_INFO_").c_str());
+
   for (int i=0; i<12; ++i) { // Make the global pointers all null
     DQNS[i] = NULL;
   }
